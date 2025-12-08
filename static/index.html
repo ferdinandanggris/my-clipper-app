@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Video Clipper Pro</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #1a1a1a; color: #fff; }
+        .card { background: #2d2d2d; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); margin-bottom: 25px; border: 1px solid #3d3d3d; }
+        h2, h3 { margin-top: 0; color: #00d2ff; }
+        input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px; border: none; font-size: 16px; box-sizing: border-box; }
+        input { background: #404040; color: white; border: 1px solid #555; }
+        button { cursor: pointer; font-weight: bold; transition: 0.2s; }
+        
+        /* Tombol Aksi Utama */
+        .btn-primary { background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%); color: white; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
+        
+        /* Tombol Bookmarklet */
+        .bookmark-btn {
+            display: inline-block;
+            background: #ff0055;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            border: 2px dashed rgba(255,255,255,0.5);
+            cursor: grab;
+            margin-top: 10px;
+        }
+        .bookmark-btn:active { cursor: grabbing; }
+
+        .step-number { background: #00d2ff; color: #000; width: 25px; height: 25px; display: inline-flex; justify-content: center; align-items: center; border-radius: 50%; margin-right: 10px; font-weight: bold; font-size: 14px; }
+        
+        .status-box { margin-top: 15px; padding: 15px; background: #111; border-radius: 6px; font-family: monospace; display: none; }
+        .download-btn { background: #00c853; color: white; display: none; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1>🎬 AI Video Clipper</h1>
+        <p style="color: #888;">Input YouTube -> AI Curator -> Viral Shorts</p>
+    </div>
+
+    <div class="card" style="border-left: 5px solid #ff0055;">
+        <h3><span class="step-number">1</span>Persiapan (Curi Transkrip)</h3>
+        <p>Karena YouTube sering memblokir server, gunakan tombol ini untuk mengambil transkrip langsung dari browser Anda.</p>
+        
+        <div style="text-align: center; padding: 20px; background: #222; border-radius: 8px;">
+            <a class="bookmark-btn" href="javascript:(function(){const s=document.querySelectorAll('ytd-transcript-segment-renderer');if(!s.length){alert('⚠️ Buka dulu Transkrip di deskripsi video YouTube!');return}let t='Tugas: Cari 1 segmen viral (30-60 detik). Berikan Start & End Time.\n\nTRANSKRIP:\n';console.log('Menyalin...');s.forEach(e=>{let tm=e.querySelector('.segment-timestamp').innerText.trim();let tx=e.querySelector('.segment-text').innerText.trim().replace(/\s+/g,' ');t+=`[${tm}] ${tx}\n`});navigator.clipboard.writeText(t).then(()=>alert('✅ Transkrip Ter-copy!\nSekarang Paste ke ChatGPT.')).catch(e=>{prompt('Copy manual:',t)});})();">
+                ✂️ CURI TRANSKRIP (Drag ke Bookmark)
+            </a>
+            <p style="font-size: 12px; color: #aaa; margin-top: 10px;">
+                👆 <b>Caranya:</b> Klik & Tahan tombol merah di atas, lalu geser (Drag) ke Bookmark Bar browser Anda.
+            </p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3><span class="step-number">2</span>Render Video Viral</h3>
+        <p>Paste link dan waktu yang diberikan ChatGPT di sini.</p>
+        
+        <label>Link YouTube</label>
+        <input type="text" id="url" placeholder="https://www.youtube.com/watch?v=...">
+        
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <div style="flex: 1;">
+                <label>Start Time</label>
+                <input type="text" id="start" placeholder="00:14:20">
+            </div>
+            <div style="flex: 1;">
+                <label>End Time</label>
+                <input type="text" id="end" placeholder="00:15:10">
+            </div>
+        </div>
+
+        <button class="btn-primary" onclick="startRender()">🚀 PROSES VIDEO</button>
+
+        <div id="statusBox" class="status-box">Menunggu antrian...</div>
+        <a id="downloadLink" href="#" target="_blank" style="text-decoration: none;">
+            <button class="download-btn" id="dlBtn">⬇️ DOWNLOAD VIDEO HASIL</button>
+        </a>
+    </div>
+
+    <script>
+        async function startRender() {
+            const url = document.getElementById('url').value;
+            const start = document.getElementById('start').value;
+            const end = document.getElementById('end').value;
+            const statusBox = document.getElementById('statusBox');
+            const dlBtn = document.getElementById('dlBtn');
+
+            if(!url || !start || !end) return alert("Mohon lengkapi semua data!");
+
+            statusBox.style.display = 'block';
+            statusBox.innerText = "⏳ Mengirim data ke server...";
+            statusBox.style.color = "#ffa500";
+            dlBtn.style.display = 'none';
+
+            try {
+                // 1. Kirim Request
+                const res = await fetch('/api/render', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url, start, end})
+                });
+                const data = await res.json();
+                const jobId = data.job_id;
+
+                // 2. Polling Status
+                const interval = setInterval(async () => {
+                    const check = await fetch(`/api/status/${jobId}`);
+                    const statusData = await check.json();
+                    
+                    if (statusData.status === 'processing') {
+                        statusBox.innerText = "🔨 Sedang mendownload & memotong...";
+                    } else if (statusData.status === 'transcribing') {
+                        statusBox.innerText = "✨ AI sedang membuat subtitle neon...";
+                    } else if (statusData.status === 'rendering') {
+                        statusBox.innerText = "🎬 FFmpeg sedang merender (Blur BG)...";
+                    } else if (statusData.status === 'completed') {
+                        clearInterval(interval);
+                        statusBox.innerText = "✅ SELESAI!";
+                        statusBox.style.color = "#00c853";
+                        
+                        document.getElementById('downloadLink').href = statusData.file_url;
+                        dlBtn.style.display = 'block';
+                    } else if (statusData.status.includes('failed') || statusData.status.includes('error')) {
+                        clearInterval(interval);
+                        statusBox.innerText = "❌ GAGAL: " + statusData.status;
+                        statusBox.style.color = "red";
+                    }
+                }, 3000); // Cek setiap 3 detik
+
+            } catch (err) {
+                statusBox.innerText = "Error koneksi: " + err;
+            }
+        }
+    </script>
+</body>
+</html>
