@@ -42,7 +42,7 @@ def process_video_task(job_id, url, start, end, output_dir, jobs_dict):
         jobs_dict[job_id] = "transcribing" # Status: Transcribing
         
         # Gunakan 'small' atau 'base' + Prompt agar akurat
-        model = whisper.load_model("small") 
+        model = whisper.load_model("tiny") 
         INITIAL_PROMPT = "Podcast bisnis, investasi, saham, crypto, Indonesia, Inggris."
         result = model.transcribe(temp_name, fp16=False, word_timestamps=True, initial_prompt=INITIAL_PROMPT)
         
