@@ -20,36 +20,56 @@ def format_timestamp_ass(seconds):
 # Tambahkan parameter 'jobs_dict' untuk update status real-time
 def process_video_task(job_id, url, start, end, output_dir, jobs_dict):
     try:
-        # 1. DOWNLOAD
-        jobs_dict[job_id] = "processing" # Status: Processing
+        # 1. DOWNLOAD (Status: Processing)
+        jobs_dict[job_id] = "processing"
         
-        temp_name = f"raw_{job_id}.mp4"
-        if os.path.exists(temp_name): os.remove(temp_name)
+        # Kita set nama base tanpa ekstensi dulu, biar yt-dlp yang nentuin
+        base_name = f"raw_{job_id}"
+        # Nanti kita cari file hasilnya (bisa .mp4, .mkv, .webm)
+        
+        # Hapus file lama jika ada (cleanup)
+        for ext in [".mp4", ".webm", ".mkv"]:
+            if os.path.exists(base_name + ext): os.remove(base_name + ext)
 
         opts = {
-            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-            'outtmpl': temp_name,
+            # REVISI 1: Jangan paksa [ext=mp4]. Ambil best quality apa aja.
+            'format': 'bestvideo+bestaudio/best', 
+            
+            # REVISI 2: Paksa output akhirnya digabung/convert jadi MP4
+            'merge_output_format': 'mp4',
+            
+            'outtmpl': base_name + '.%(ext)s', # Biarkan yt-dlp pakai ekstensi asli dulu
             'download_ranges': yt_dlp.utils.download_range_func(None, [(parse_time(start), parse_time(end))]),
             'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
-            'force_keyframes_at_cuts': False, 'quiet': True, 'nocheckcertificate': True,
-            # --- TAMBAHAN PENTING: BACA COOKIES ---
-            'cookiefile': 'cookies.txt' 
+            'force_keyframes_at_cuts': False, 
+            'quiet': True, 
+            'nocheckcertificate': True,
+            'cookiefile': 'cookies.txt' # Pastikan cookies.txt ada
         }
         
         with yt_dlp.YoutubeDL(opts) as ydl: ydl.download([url])
 
-        if not os.path.exists(temp_name): raise Exception("Download gagal")
-
-        # 2. TRANSCRIBE
-        jobs_dict[job_id] = "transcribing" # Status: Transcribing
+        # REVISI 3: Deteksi file hasil download (karena ekstensinya bisa mkv/webm)
+        temp_name = None
+        for ext in [".mp4", ".webm", ".mkv"]:
+            if os.path.exists(base_name + ext):
+                temp_name = base_name + ext
+                break
         
-        # Gunakan 'small' atau 'base' + Prompt agar akurat
+        if not temp_name: 
+            raise Exception("File video tidak ditemukan setelah download.")
+
+        # 2. TRANSCRIBE (Status: Transcribing)
+        jobs_dict[job_id] = "transcribing"
+        
+        # Gunakan 'tiny' biar RAM aman di server gratisan
         model = whisper.load_model("tiny") 
-        INITIAL_PROMPT = "Podcast bisnis, investasi, saham, crypto, Indonesia, Inggris."
+        INITIAL_PROMPT = "Podcast bisnis, investasi, saham, crypto, Indonesia."
         result = model.transcribe(temp_name, fp16=False, word_timestamps=True, initial_prompt=INITIAL_PROMPT)
         
         ass_path = f"style_{job_id}.ass"
-        # Style Neon (MarginV=300 sudah diterapkan)
+        
+        # HEADER NEON STYLE
         header = """[Script Info]
 ScriptType: v4.00+
 PlayResX: 1080
@@ -64,16 +84,16 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             f.write(header)
             for segment in result["segments"]:
                 words = segment.get("words", [])
-                for i in range(0, len(words), 3):
-                    chunk = words[i : i + 3]
+                for i in range(0, len(words), 2):
+                    chunk = words[i : i + 2]
                     if not chunk: continue
                     s = format_timestamp_ass(chunk[0]["start"])
                     e = format_timestamp_ass(chunk[-1]["end"])
                     t = "".join([w["word"] for w in chunk]).strip().upper()
                     f.write(f"Dialogue: 0,{s},{e},NeonStyle,,0,0,0,,{{\\blur15\\bord3\\shad1}} {t}\n")
 
-        # 3. RENDER FFMPEG
-        jobs_dict[job_id] = "rendering" # Status: Rendering
+        # 3. RENDER FFMPEG (Status: Rendering)
+        jobs_dict[job_id] = "rendering"
         
         final_output = f"{output_dir}/{job_id}.mp4"
         abs_ass = os.path.abspath(ass_path).replace("\\", "/").replace(":", "\\:")
@@ -86,6 +106,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             f"[merged]ass='{abs_ass}'"
         )
         
+        # Jalankan FFmpeg
         subprocess.run(["ffmpeg", "-i", temp_name, "-filter_complex", filter_complex, 
                         "-c:v", "libx264", "-preset", "fast", "-crf", "23", "-c:a", "copy", "-y", final_output], check=True)
 
