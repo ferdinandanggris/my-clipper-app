@@ -31,7 +31,9 @@ def process_video_task(job_id, url, start, end, output_dir, jobs_dict):
             'outtmpl': temp_name,
             'download_ranges': yt_dlp.utils.download_range_func(None, [(parse_time(start), parse_time(end))]),
             'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
-            'force_keyframes_at_cuts': False, 'quiet': True, 'nocheckcertificate': True
+            'force_keyframes_at_cuts': False, 'quiet': True, 'nocheckcertificate': True,
+            # --- TAMBAHAN PENTING: BACA COOKIES ---
+            'cookiefile': 'cookies.txt' 
         }
         
         with yt_dlp.YoutubeDL(opts) as ydl: ydl.download([url])
