@@ -7,35 +7,46 @@
     <style>
         body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
         
-        /* LAYOUT 2 KOLOM */
         .container { display: flex; flex-wrap: wrap; gap: 30px; align-items: flex-start; }
         .column-left { flex: 1; min-width: 320px; }
         .column-right { flex: 0 0 280px; display: flex; flex-direction: column; align-items: center; position: sticky; top: 20px; }
 
-        /* CARD STYLE */
         .card { background: #1e1e1e; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; width: 100%; box-sizing: border-box; }
         
-        /* FORM ELEMENTS */
         input, button, select, textarea { width: 100%; padding: 12px; margin-top: 8px; border-radius: 6px; border: none; box-sizing: border-box; }
         input, select, textarea { background: #2d2d2d; color: white; border: 1px solid #444; }
         
-        /* BUTTONS */
         button { background: #007bff; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:hover { background: #0056b3; }
         
-        /* Tombol Kecil (Copy/Tools) */
         .btn-small { background: #444; font-size: 11px; padding: 5px 10px; width: auto; margin-top: 0; }
         .btn-secondary { background: #333; border: 1px solid #555; margin-top: 5px; }
 
         label { font-size: 0.85em; color: #aaa; margin-top: 12px; display: block; font-weight: 600; }
         
-        /* Switch Slider Style */
         .switch-container { display: flex; align-items: center; gap: 10px; margin: 15px 0; padding: 12px; background: #252525; border-radius: 8px; border: 1px solid #333; }
         .badge-ai { background: linear-gradient(45deg, #ff00cc, #3333ff); padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 5px; }
 
+        /* --- STYLE SELECTOR (BARU) --- */
+        .style-selector { display: flex; gap: 10px; margin-top: 8px; }
+        .style-option { flex: 1; position: relative; }
+        .style-option input { display: none; }
+        .style-card { 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 15px; background: #2d2d2d; border: 2px solid #444; border-radius: 8px; cursor: pointer; transition: 0.2s; height: 100%;
+        }
+        .style-card i { font-size: 24px; margin-bottom: 5px; }
+        .style-card span { font-size: 12px; font-weight: bold; }
+        
+        /* State Checked */
+        .style-option input:checked + .style-card {
+            border-color: #007bff; background: #1a2733; color: #fff;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
+        }
+
         /* --- PREVIEW SCREEN STYLES (Mockup HP) --- */
         .phone-mockup {
-            width: 240px; height: 426px; /* Ratio 9:16 agak besar dikit */
+            width: 240px; height: 426px;
             background: #000;
             border: 10px solid #222;
             border-radius: 30px;
@@ -62,6 +73,7 @@
         }
         .icon-dummy { width: 35px; height: 35px; background: rgba(255,255,255,0.2); border-radius: 50%; backdrop-filter: blur(5px); }
     </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
 
@@ -101,6 +113,24 @@
                     <div style="flex:1"><label>End</label><input type="text" id="end" placeholder="00:15:10"></div>
                 </div>
 
+                <label>Gaya Video Output</label>
+                <div class="style-selector">
+                    <div class="style-option">
+                        <input type="radio" name="videoStyle" id="styleVertical" value="vertical" checked>
+                        <label for="styleVertical" class="style-card">
+                            <i class="fas fa-crop-alt"></i>
+                            <span>📱 Vertical AI Crop</span>
+                        </label>
+                    </div>
+                    <div class="style-option">
+                        <input type="radio" name="videoStyle" id="styleBlur" value="blur">
+                        <label for="styleBlur" class="style-card">
+                            <i class="fas fa-photo-video"></i>
+                            <span>🌫️ Horizontal + Blur</span>
+                        </label>
+                    </div>
+                </div>
+
                 <hr style="border: 0; border-top: 1px solid #333; margin: 25px 0;">
 
                 <label>↕️ Posisi Subtitle (Geser untuk Preview)</label>
@@ -137,7 +167,6 @@
 
                 <details style="background: #222; padding: 10px; border-radius: 8px;">
                     <summary style="cursor: pointer; font-size: 12px; color: #aaa; font-weight: bold;">📝 Butuh Transkrip Full? (Klik disini)</summary>
-                    <p style="font-size: 11px; color: #666; margin: 5px 0;">Gunakan ini untuk generate konten manual di ChatGPT jika AI otomatis kurang cocok.</p>
                     <textarea id="transcriptRaw" rows="8" readonly placeholder="Menunggu transkrip..." style="font-size: 10px; color: #bbb; background: #151515;"></textarea>
                     <button class="btn-small" onclick="copyTranscript()" style="width: 100%; margin-top: 5px;">📋 Copy Full Transkrip</button>
                 </details>
@@ -166,7 +195,6 @@
     </div>
 
     <script>
-        // LOGIKA PREVIEW REAL-TIME
         const slider = document.getElementById('subPos');
         const previewText = document.getElementById('previewText');
         const posValue = document.getElementById('posValue');
@@ -180,7 +208,6 @@
         slider.addEventListener('input', updatePreview);
         updatePreview();
 
-        // LOGIKA INPUT TOGGLE
         function toggleInputs() {
             const isAi = document.getElementById('useAi').checked;
             document.getElementById('start').disabled = isAi;
@@ -188,7 +215,6 @@
             document.getElementById('manualInputs').style.opacity = isAi ? "0.3" : "1";
         }
 
-        // LOGIKA RENDER UTAMA
         async function startRender() {
             const url = document.getElementById('url').value;
             const useAi = document.getElementById('useAi').checked;
@@ -197,6 +223,9 @@
             const subtitle_pos = parseInt(document.getElementById('subPos').value);
             const niche = document.getElementById('niche').value;
             const lang = document.getElementById('langSelect').value;
+            
+            // AMBIL VALUE STYLE (Vertical / Blur)
+            const style = document.querySelector('input[name="videoStyle"]:checked').value;
 
             if(!url) return alert("Link URL wajib diisi!");
             if(!useAi && (!start || !end)) return alert("Isi waktu manual atau centang AI!");
@@ -214,7 +243,8 @@
                 const res = await fetch('/api/render', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ url, start, end, subtitle_pos, use_ai: useAi, niche, lang })
+                    // KIRIM STYLE KE BACKEND
+                    body: JSON.stringify({ url, start, end, subtitle_pos, use_ai: useAi, niche, lang, style })
                 });
                 
                 const data = await res.json();
@@ -235,26 +265,22 @@
                 const res = await fetch(`/api/status/${jobId}`);
                 const data = await res.json();
                 
-                // Update Status Text
                 let text = data.status.replace(/_/g, " ").toUpperCase();
                 if(text.includes('AI')) text = "🧠 AI SEDANG MIKIR...";
-                if(text.includes('DOWNLOAD')) text = "📥 DOWNLOAD VIDEO...";
+                if(text.includes('DOWNLOAD')) text = "📥 DOWNLOAD VIDEO 4K...";
                 if(text.includes('RENDER')) text = "🎨 EDITING VIDEO...";
                 statusBox.innerText = text;
 
-                // Tampilkan Metadata (Judul & Desc)
                 if (data.metadata && data.metadata.title) {
                     document.getElementById('resultCard').style.display = 'block';
                     document.getElementById('aiTitle').innerText = data.metadata.title;
                     document.getElementById('aiDesc').value = data.metadata.description;
                 }
 
-                // Tampilkan Transkrip (Jika ada)
                 if (data.transcript_text && data.transcript_text.length > 20) {
                     document.getElementById('transcriptRaw').value = data.transcript_text;
                 }
 
-                // Selesai
                 if (data.status === 'completed') {
                     clearInterval(interval);
                     statusBox.innerText = "✅ SELESAI!";
@@ -277,7 +303,6 @@
             }, 2000);
         }
 
-        // FUNGSI COPY-COPY
         function copyMeta() {
             const el = document.getElementById("aiDesc");
             el.select(); document.execCommand("copy");
@@ -294,7 +319,7 @@
         function copyTranscript() {
             const el = document.getElementById("transcriptRaw");
             el.select(); document.execCommand("copy");
-            alert("Transkrip berhasil dicopy! Silakan paste ke AI Chat.");
+            alert("Transkrip berhasil dicopy!");
         }
     </script>
 </body>

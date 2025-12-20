@@ -1,143 +1,157 @@
-# 🎬 AI Smart Clipper (Pro Edition)
+# 🎬 AI Smart Clipper Pro
 
-**AI Smart Clipper** adalah tool otomatis "All-in-One" untuk mengubah video panjang (Podcast/Interview) menjadi konten **Shorts/TikTok viral** secara instan.
+**AI Smart Clipper Pro** adalah aplikasi web modern berbasis Python yang mengubah video panjang (Podcast, Interview, Talkshow) dari YouTube menjadi video pendek vertikal (Shorts, Reels, TikTok) secara otomatis dengan kualitas tinggi.
 
-Didukung oleh **Google Gemini 2.5** (Otak) dan **FFmpeg** (Otot), tool ini aman, cepat, dan sekarang dilengkapi fitur keamanan standar industri (Environment Variables).
-
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![Gemini](https://img.shields.io/badge/AI-Gemini%202.5-orange)
-![Security](https://img.shields.io/badge/Config-.env-red)
+Sistem ini memiliki dua mesin render canggih: **AI Face Tracking** (untuk video ngobrol) dan **Cinema Blur** (untuk gaya repost).
 
 ---
 
-## 🔥 Fitur Utama
+## ✨ Fitur Utama
 
-### 🧠 1. AI Auto-Pilot (Gemini 2.5)
-* **Auto-Detect Viral Clip:** AI membaca transkrip 1 jam dan memilih 30-60 detik bagian paling "daging".
-* **Smart Captioning:** Membuat Judul Clickbait & Deskripsi + 3-5 Hashtag Viral.
-* **Multi-Language Support:**
-    * 🇮🇩 **Indo Mode:** Bahasa gaul/santai.
-    * 🇺🇸 **English Mode:** Slang & Global hook style.
-* **Custom Niche:** Targetkan topik spesifik (Crypto, Horror, Motivation).
+### 1. Dual Engine Technology 🎥
+Pilih gaya video output sesuai kebutuhan melalui Web UI:
+- **📱 Vertical AI Crop:** Menggunakan **MediaPipe** untuk mendeteksi wajah pembicara, melakukan zoom otomatis, dan menjaga subjek tetap di tengah frame (Smart Tracking).
+- **🌫️ Horizontal + Blur:** Menampilkan video asli secara utuh di tengah dengan latar belakang blur (*Cinematic Background*), cocok untuk video tutorial atau gaming.
 
-### 🎨 2. Visual & Editing Otomatis
-* **9:16 Vertical Crop:** Video landscape jadi portrait otomatis.
-* **Gold Subtitles:** Subtitle emas ala "Hormozi" (Word-level timestamps).
-* **Anti-Copyright:** Speed up 1.05x dan color grading otomatis.
+### 2. High Quality Production 💎
+- **4K/1080p Download:** Menggunakan algoritma *Android Client Spoofing* untuk mengunduh source video kualitas tertinggi dari YouTube tanpa error 403.
+- **Visual Pop:** Otomatis menerapkan *Sharpening (Lanczos)* dan *Color Grading* agar video terlihat tajam dan cerah di layar HP.
+- **Audio Bypass:** Menjamin sinkronisasi bibir (*Lip-sync*) 100% akurat dan kualitas audio asli (tanpa kompresi ulang yang merusak).
 
-### 📱 3. Pro Web UI
-* **Live Preview:** Mockup layar HP Real-time (memastikan subtitle tidak tertutup caption).
-* **Split Layout:** Tampilan 2 kolom profesional.
-* **Manual Tools:** Tombol Copy Judul, Caption, dan Ekstrak Transkrip Full.
+### 3. Otomatisasi Cerdas 🧠
+- **Auto Subtitle:** Transkripsi otomatis menggunakan **OpenAI Whisper** dengan gaya subtitle "Karaoke/Neon" yang viral.
+- **Auto Cleanup:** Sistem otomatis membersihkan file sampah (*raw/cache*) setelah proses selesai (sukses maupun gagal), menjaga penyimpanan server tetap aman.
 
 ---
 
-## 🛠️ Persiapan (Wajib)
+## 🛠️ Persiapan Sistem (Prerequisites)
 
-Sebelum install, pastikan Anda memiliki:
+Sebelum menginstall, pastikan perangkat kamu memenuhi syarat berikut:
 
-1.  **FFmpeg** (Wajib terinstall di sistem).
-    * *Windows:* Download dari ffmpeg.org & masukkan ke PATH.
-    * *Ubuntu:* `sudo apt install ffmpeg`
-    * *Mac:* `brew install ffmpeg`
-2.  **API Key Google Gemini** (Gratis via [Google AI Studio](https://aistudio.google.com/)).
-3.  **File `cookies.txt`** (Untuk login YouTube).
-    * Gunakan ekstensi Chrome "Get cookies.txt LOCALLY".
-    * Login YouTube, download, simpan file sebagai `cookies.txt` di folder project.
+### 1. Python 3.10 (Wajib)
+Library MediaPipe berjalan paling stabil di Python 3.10. Hindari Python 3.12 untuk saat ini karena isu kompatibilitas.
+- Cek versi: `python --version`
 
----
+### 2. FFmpeg (Wajib)
+Aplikasi ini membutuhkan FFmpeg di level sistem untuk memproses video.
 
-## 🚀 Cara Install & Jalanin
+- **Windows:**
+  1. Download build terbaru di [ffmpeg.org](https://ffmpeg.org/download.html).
+  2. Extract, lalu masukkan path folder `/bin` ke dalam **Environment Variables (PATH)** Windows.
+  3. Verifikasi di CMD: `ffmpeg -version`.
+  
+- **Mac (macOS):**
+  ```bash
+  brew install ffmpeg
 
-### A. Cara Lokal (Windows/Mac/Linux)
+```
 
-1.  **Clone Project**
-    ```bash
-    git clone [https://github.com/username/ai-clipper.git](https://github.com/username/ai-clipper.git)
-    cd ai-clipper
-    ```
+* **Linux (Ubuntu/Debian):**
+```bash
+sudo apt update && sudo apt install ffmpeg
 
-2.  **Setup Environment (PENTING!)**
-    Buat file bernama `.env` di folder root, lalu isi dengan API Key Anda:
-    ```env
-    GOOGLE_API_KEY=AIzaSyDxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    ```
-    *(Jangan pakai tanda kutip, jangan ada spasi)*
+```
 
-3.  **Install Dependencies**
-    ```bash
-    python -m venv venv
-    # Windows: venv\Scripts\activate
-    # Mac/Linux: source venv/bin/activate
-    
-    pip install -r requirements.txt
-    ```
 
-4.  **Jalankan Server**
-    ```bash
-    python -m uvicorn main:app --reload
-    ```
-    Buka browser: `http://127.0.0.1:8000`
 
 ---
 
-### B. Cara Server (Docker / Ubuntu VPS)
+## 🚀 Cara Install (Deploy)
 
-Gunakan metode ini agar aman saat deploy (Key diambil dari file .env).
+### 1. Clone / Siapkan Folder
 
-1.  **Build Image**
-    ```bash
-    sudo docker build -t ai-clipper .
-    ```
+Buat folder baru (misal: `ai-clipper`) dan masukkan semua file project ke dalamnya.
 
-2.  **Run Container**
-    Kita gunakan flag `--env-file .env` agar Docker membaca kunci rahasia Anda.
-    
-    ```bash
-    # Buat folder output dulu
-    mkdir -p static/results
-    
-    # Jalankan
-    sudo docker run -d \
-      --name clipper-container \
-      --restart unless-stopped \
-      --env-file .env \
-      -p 8080:8080 \
-      -v $(pwd)/static/results:/app/static/results \
-      -v $(pwd)/cookies.txt:/app/cookies.txt \
-      ai-clipper
-    ```
-    *(Note: Kita juga me-mount `cookies.txt` agar tidak perlu copy-paste ke dalam image)*.
+### 2. Buat Virtual Environment (Venv)
 
-3.  Akses via IP VPS: `http://IP_SERVER_ANDA:8080`
+Penting agar library tidak bentrok dengan sistem lain.
 
----
+**Windows:**
 
-## 📂 Struktur Project Aman
+```bash
+python -m venv venv
+venv\Scripts\activate
 
-Project ini sudah dikonfigurasi agar file rahasia **TIDAK** ter-upload ke GitHub.
+```
 
-* `.env` -> **RAHASIA** (API Key disimpan di sini).
-* `cookies.txt` -> **RAHASIA** (Login YouTube disimpan di sini).
-* `.gitignore` -> File yang memberitahu Git untuk mengabaikan 2 file di atas.
-* `main.py` -> Server Pusat.
-* `ai_brain.py` -> Otak AI (Sekarang membaca Key dari .env).
-* `static/` -> UI Frontend.
+**Mac / Linux:**
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+
+```
+
+### 3. Install Library
+
+Jalankan perintah ini untuk menginstall semua dependensi:
+
+```bash
+pip install -r requirements.txt
+
+```
+
+*(Tunggu hingga selesai. Proses ini akan mendownload model Machine Learning Whisper & MediaPipe).*
 
 ---
 
-## ❓ Troubleshooting
+## ▶️ Cara Menjalankan
 
-**Q: Error `ValueError: API Key tidak ditemukan`?**
-A: Anda lupa membuat file `.env` atau namanya salah (harus `.env` saja, bukan `.env.txt`).
+1. Pastikan Virtual Environment sudah aktif.
+2. Jalankan server backend:
+```bash
+python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
-**Q: Error 403 Forbidden saat download?**
-A: `cookies.txt` kadaluwarsa. Download ulang dari browser (fresh login).
+```
 
-**Q: Video tidak muncul di tombol download?**
-A: Cek folder `static/results`. Pastikan FFmpeg terinstall dengan benar.
+
+3. Buka browser dan akses:
+👉 **http://localhost:8000**
 
 ---
 
-### Credits
-Dibuat untuk otomatisasi konten viral. Gunakan dengan bijak! 🚀
+## 📁 Struktur Project
+
+Pastikan susunan folder kamu terlihat seperti ini:
+
+```text
+/project-folder
+│
+├── main.py              # Backend Server (FastAPI)
+├── core_engine.py       # Engine 1: Vertical AI (Face Tracking)
+├── engine_blur.py       # Engine 2: Horizontal Blur Style
+├── requirements.txt     # Daftar Library
+├── README.md            # File Dokumen ini
+│
+└── static/
+    ├── index.html       # Tampilan Web (Frontend)
+    └── results/         # Folder Output Video (Otomatis dibuat)
+
+```
+
+---
+
+## ⚠️ Troubleshooting (Masalah Umum)
+
+**Q: Muncul error `HTTP Error 403: Forbidden` saat download?**
+**A:** YouTube sering memblokir bot. Script ini sudah menggunakan *User Agent Android* untuk menembusnya. Jika masih error, coba update `yt-dlp`:
+
+```bash
+pip install -U yt-dlp
+
+```
+
+**Q: Error `UserWarning: SymbolDatabase.GetPrototype() is deprecated`?**
+**A:** Ini peringatan wajar dari Google Protobuf. Hiraukan saja, aplikasi tetap berjalan normal. Kode sudah memiliki penanganan otomatis (`os.environ`).
+
+**Q: Video hasilnya patah-patah atau tidak ada wajah?**
+**A:** Pada mode *Vertical*, pastikan video sumber memiliki wajah manusia yang jelas. Jika tidak ada wajah, sistem akan default ke tengah.
+
+**Q: Error `returned non-zero exit status 234` pada mode Blur?**
+**A:** Pastikan kamu menggunakan file `engine_blur.py` versi terbaru yang sudah menggunakan filter `split=2` dan `scale=1080:-2` untuk mengatasi bug dimensi ganjil pada FFmpeg.
+
+---
+
+## 📜 Lisensi & Credits
+
+Dibuat dengan ❤️ menggunakan Python, OpenCV, dan FFmpeg.
