@@ -1,0 +1,12 @@
+__pycache__
+venv/
+.git/
+.env
+*.mp4
+*.mp3
+*.wav
+*.ass
+*.vtt
+static/results/*
+temp_*
+raw_*
