@@ -1,0 +1,29 @@
+# --- RAHASIA NEGARA (JANGAN UPLOAD) ---
+.env
+cookies.txt
+
+# --- Python System ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# --- File Hasil / Sampah Sementara ---
+static/results/*
+!static/results/.gitkeep
+temp_*
+*.srt
+*.ass
+*.mp4
+*.mp3
+*.mkv
+*.webm
+
+# --- Docker ---
+Dockerfile
+.dockerignore
+
+# --- Log / DB ---
+*.log

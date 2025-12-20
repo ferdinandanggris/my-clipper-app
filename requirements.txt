@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+yt-dlp
+openai-whisper
+ffmpeg-python
+jinja2
+pydantic
+python-multipart
+google-generativeai
+python-dotenv

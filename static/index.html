@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Smart Clipper (Pro Preview)</title>
+    <style>
+        body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
+        
+        /* LAYOUT 2 KOLOM */
+        .container { display: flex; flex-wrap: wrap; gap: 30px; align-items: flex-start; }
+        .column-left { flex: 1; min-width: 320px; }
+        .column-right { flex: 0 0 280px; display: flex; flex-direction: column; align-items: center; position: sticky; top: 20px; }
+
+        /* CARD STYLE */
+        .card { background: #1e1e1e; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; width: 100%; box-sizing: border-box; }
+        
+        /* FORM ELEMENTS */
+        input, button, select, textarea { width: 100%; padding: 12px; margin-top: 8px; border-radius: 6px; border: none; box-sizing: border-box; }
+        input, select, textarea { background: #2d2d2d; color: white; border: 1px solid #444; }
+        
+        /* BUTTONS */
+        button { background: #007bff; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #0056b3; }
+        
+        /* Tombol Kecil (Copy/Tools) */
+        .btn-small { background: #444; font-size: 11px; padding: 5px 10px; width: auto; margin-top: 0; }
+        .btn-secondary { background: #333; border: 1px solid #555; margin-top: 5px; }
+
+        label { font-size: 0.85em; color: #aaa; margin-top: 12px; display: block; font-weight: 600; }
+        
+        /* Switch Slider Style */
+        .switch-container { display: flex; align-items: center; gap: 10px; margin: 15px 0; padding: 12px; background: #252525; border-radius: 8px; border: 1px solid #333; }
+        .badge-ai { background: linear-gradient(45deg, #ff00cc, #3333ff); padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 5px; }
+
+        /* --- PREVIEW SCREEN STYLES (Mockup HP) --- */
+        .phone-mockup {
+            width: 240px; height: 426px; /* Ratio 9:16 agak besar dikit */
+            background: #000;
+            border: 10px solid #222;
+            border-radius: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            background-image: linear-gradient(45deg, #1a1a1a 25%, #111 25%, #111 50%, #1a1a1a 50%, #1a1a1a 75%, #111 75%, #111 100%);
+            background-size: 20px 20px;
+        }
+
+        #previewText {
+            position: absolute; left: 50%; transform: translateX(-50%); width: 90%; text-align: center;
+            font-family: 'Arial Black', sans-serif; font-weight: 900; color: #FFD700; 
+            text-shadow: 2px 2px 0px #000; font-size: 16px; pointer-events: none; transition: bottom 0.1s; z-index: 10;
+        }
+
+        .ui-overlay-bottom {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 100px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); pointer-events: none;
+            display: flex; flex-direction: column; justify-content: flex-end; padding: 15px; box-sizing: border-box;
+        }
+        .ui-overlay-right {
+            position: absolute; right: 10px; bottom: 80px; display: flex; flex-direction: column; gap: 15px;
+        }
+        .icon-dummy { width: 35px; height: 35px; background: rgba(255,255,255,0.2); border-radius: 50%; backdrop-filter: blur(5px); }
+    </style>
+</head>
+<body>
+
+    <h2 style="text-align: center; margin-bottom: 30px;">🎬 AI Smart Clipper <span class="badge-ai">PRO TOOLS</span></h2>
+
+    <div class="container">
+        
+        <div class="column-left">
+            <div class="card">
+                <label>Link YouTube (Podcast/Interview)</label>
+                <input type="text" id="url" placeholder="https://youtube.com/watch?v=...">
+
+                <div class="switch-container">
+                    <input type="checkbox" id="useAi" onchange="toggleInputs()" style="width: 20px; height: 20px; cursor: pointer;">
+                    <div style="margin-left: 5px;">
+                        <span style="font-weight: bold; color: white;">Aktifkan AI Auto-Pilot</span><br>
+                        <span style="font-size: 11px; color: #888;">Gemini cari clip viral & bikin judul otomatis.</span>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>Niche / Topik</label>
+                        <input type="text" id="niche" value="Tech, Philosophy" placeholder="Topik...">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Bahasa Output</label>
+                        <select id="langSelect">
+                            <option value="id" selected>🇮🇩 Indonesia (Viral)</option>
+                            <option value="en">🇺🇸 English (Global)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="manualInputs" style="display: flex; gap: 10px;">
+                    <div style="flex:1"><label>Start</label><input type="text" id="start" placeholder="00:14:20"></div>
+                    <div style="flex:1"><label>End</label><input type="text" id="end" placeholder="00:15:10"></div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #333; margin: 25px 0;">
+
+                <label>↕️ Posisi Subtitle (Geser untuk Preview)</label>
+                <input type="range" id="subPos" min="50" max="800" value="300" style="width: 100%; cursor: pointer;">
+                <div style="font-size: 12px; color: #666; text-align: center; margin-top: -5px;">
+                    Rendah (50) — <span id="posValue" style="color: #FFD700; font-weight: bold;">300</span> — Tinggi (800)
+                </div>
+                
+                <button onclick="startRender()" id="processBtn" style="margin-top: 25px; padding: 15px; font-size: 16px;">🚀 PROSES SEKARANG</button>
+                
+                <div id="statusBox" style="margin-top: 15px; font-weight: bold; color: #ffd700; text-align: center;"></div>
+            </div>
+
+            <div class="card" id="resultCard" style="display:none; border: 1px solid #007bff;">
+                <h3 style="margin-top:0;">✅ Video Siap!</h3>
+                
+                <div style="background: #252525; padding: 12px; border-radius: 6px; border-left: 4px solid #007bff; display: flex; align-items: flex-start; gap: 10px;">
+                    <div style="flex: 1;">
+                        <p style="margin:0; font-size: 10px; color:#888; font-weight: bold;">AI VIRAL TITLE:</p>
+                        <h4 id="aiTitle" style="margin: 5px 0; font-size: 15px; line-height: 1.4;">-</h4>
+                    </div>
+                    <button class="btn-small" onclick="copyTitle()" title="Copy Judul">📋 Copy</button>
+                </div>
+                
+                <label>Caption & Hashtags</label>
+                <textarea id="aiDesc" rows="4" style="font-size: 12px; padding:10px;"></textarea>
+                <button class="btn-secondary" onclick="copyMeta()" style="width: 100%;">📋 Copy Caption</button>
+
+                <a id="dlLink" href="#" target="_blank" style="display:none; text-decoration: none;">
+                    <button id="dlBtn" style="width: 100%; background: #28a745; margin-top: 15px; padding: 15px; font-size: 16px;">⬇️ DOWNLOAD VIDEO</button>
+                </a>
+
+                <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
+
+                <details style="background: #222; padding: 10px; border-radius: 8px;">
+                    <summary style="cursor: pointer; font-size: 12px; color: #aaa; font-weight: bold;">📝 Butuh Transkrip Full? (Klik disini)</summary>
+                    <p style="font-size: 11px; color: #666; margin: 5px 0;">Gunakan ini untuk generate konten manual di ChatGPT jika AI otomatis kurang cocok.</p>
+                    <textarea id="transcriptRaw" rows="8" readonly placeholder="Menunggu transkrip..." style="font-size: 10px; color: #bbb; background: #151515;"></textarea>
+                    <button class="btn-small" onclick="copyTranscript()" style="width: 100%; margin-top: 5px;">📋 Copy Full Transkrip</button>
+                </details>
+            </div>
+        </div>
+
+        <div class="column-right">
+            <h4 style="margin-top: 0; color: #888; margin-bottom: 15px;">Live Preview</h4>
+            <div class="phone-mockup">
+                <div id="previewText">CONTOH<br>SUBTITLE</div>
+
+                <div class="ui-overlay-right">
+                    <div class="icon-dummy"></div>
+                    <div class="icon-dummy"></div>
+                    <div class="icon-dummy"></div>
+                </div>
+                <div class="ui-overlay-bottom">
+                    <div style="width: 70%; height: 10px; background: rgba(255,255,255,0.4); border-radius: 5px; margin-bottom: 8px;"></div>
+                    <div style="width: 40%; height: 10px; background: rgba(255,255,255,0.4); border-radius: 5px;"></div>
+                </div>
+            </div>
+            <p style="font-size: 11px; color: #555; text-align: center; margin-top: 15px;">
+                Pastikan teks berada di atas<br>area caption (bayangan bawah).
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // LOGIKA PREVIEW REAL-TIME
+        const slider = document.getElementById('subPos');
+        const previewText = document.getElementById('previewText');
+        const posValue = document.getElementById('posValue');
+
+        function updatePreview() {
+            const val = slider.value;
+            posValue.innerText = val;
+            const percentage = (val / 1920) * 100;
+            previewText.style.bottom = percentage + "%";
+        }
+        slider.addEventListener('input', updatePreview);
+        updatePreview();
+
+        // LOGIKA INPUT TOGGLE
+        function toggleInputs() {
+            const isAi = document.getElementById('useAi').checked;
+            document.getElementById('start').disabled = isAi;
+            document.getElementById('end').disabled = isAi;
+            document.getElementById('manualInputs').style.opacity = isAi ? "0.3" : "1";
+        }
+
+        // LOGIKA RENDER UTAMA
+        async function startRender() {
+            const url = document.getElementById('url').value;
+            const useAi = document.getElementById('useAi').checked;
+            const start = document.getElementById('start').value;
+            const end = document.getElementById('end').value;
+            const subtitle_pos = parseInt(document.getElementById('subPos').value);
+            const niche = document.getElementById('niche').value;
+            const lang = document.getElementById('langSelect').value;
+
+            if(!url) return alert("Link URL wajib diisi!");
+            if(!useAi && (!start || !end)) return alert("Isi waktu manual atau centang AI!");
+
+            const btn = document.getElementById('processBtn');
+            const statusBox = document.getElementById('statusBox');
+            
+            btn.disabled = true;
+            btn.innerText = "⏳ Sedang Proses...";
+            statusBox.innerText = "Menghubungi Server...";
+            document.getElementById('resultCard').style.display = 'none';
+            document.getElementById('transcriptRaw').value = "Mengambil transkrip...";
+
+            try {
+                const res = await fetch('/api/render', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ url, start, end, subtitle_pos, use_ai: useAi, niche, lang })
+                });
+                
+                const data = await res.json();
+                if(data.status === 'failed') throw new Error("Gagal inisialisasi job");
+                monitorStatus(data.job_id);
+
+            } catch (e) {
+                alert("Error: " + e.message);
+                btn.disabled = false;
+                btn.innerText = "🚀 PROSES SEKARANG";
+            }
+        }
+
+        function monitorStatus(jobId) {
+            const statusBox = document.getElementById('statusBox');
+            
+            const interval = setInterval(async () => {
+                const res = await fetch(`/api/status/${jobId}`);
+                const data = await res.json();
+                
+                // Update Status Text
+                let text = data.status.replace(/_/g, " ").toUpperCase();
+                if(text.includes('AI')) text = "🧠 AI SEDANG MIKIR...";
+                if(text.includes('DOWNLOAD')) text = "📥 DOWNLOAD VIDEO...";
+                if(text.includes('RENDER')) text = "🎨 EDITING VIDEO...";
+                statusBox.innerText = text;
+
+                // Tampilkan Metadata (Judul & Desc)
+                if (data.metadata && data.metadata.title) {
+                    document.getElementById('resultCard').style.display = 'block';
+                    document.getElementById('aiTitle').innerText = data.metadata.title;
+                    document.getElementById('aiDesc').value = data.metadata.description;
+                }
+
+                // Tampilkan Transkrip (Jika ada)
+                if (data.transcript_text && data.transcript_text.length > 20) {
+                    document.getElementById('transcriptRaw').value = data.transcript_text;
+                }
+
+                // Selesai
+                if (data.status === 'completed') {
+                    clearInterval(interval);
+                    statusBox.innerText = "✅ SELESAI!";
+                    
+                    const fullUrl = window.location.origin + data.file_url;
+                    const dlLink = document.getElementById('dlLink');
+                    dlLink.href = fullUrl;
+                    dlLink.style.display = 'block';
+                    
+                    document.getElementById('processBtn').disabled = false;
+                    document.getElementById('processBtn').innerText = "🚀 PROSES LAGI";
+                } 
+                else if (data.status.includes('error') || data.status === 'failed_general') {
+                    clearInterval(interval);
+                    statusBox.innerText = "❌ ERROR: " + data.status;
+                    statusBox.style.color = "red";
+                    document.getElementById('processBtn').disabled = false;
+                    document.getElementById('processBtn').innerText = "COBA LAGI";
+                }
+            }, 2000);
+        }
+
+        // FUNGSI COPY-COPY
+        function copyMeta() {
+            const el = document.getElementById("aiDesc");
+            el.select(); document.execCommand("copy");
+            alert("Caption berhasil dicopy!");
+        }
+
+        function copyTitle() {
+            const titleText = document.getElementById("aiTitle").innerText;
+            navigator.clipboard.writeText(titleText).then(() => {
+                alert("Judul berhasil dicopy!");
+            });
+        }
+
+        function copyTranscript() {
+            const el = document.getElementById("transcriptRaw");
+            el.select(); document.execCommand("copy");
+            alert("Transkrip berhasil dicopy! Silakan paste ke AI Chat.");
+        }
+    </script>
+</body>
+</html>
