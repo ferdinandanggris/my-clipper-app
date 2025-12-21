@@ -2,8 +2,11 @@ FROM python:3.10-slim
 
 # 1. Install alat sistem (Hanya jalan sekali, selamanya di-cache)
 RUN apt-get update && apt-get install -y \
-    ffmpeg libsm6 libxext6 libgl1-mesa-glx \
-    && apt-get clean
+    ffmpeg \
+    libsm6 \
+    libxext6 \
+    libgl1 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
