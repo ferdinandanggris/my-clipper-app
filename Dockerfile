@@ -1,30 +1,22 @@
-# 1. Gunakan Base Image Python yang ringan (Linux Debian)
 FROM python:3.10-slim
 
-# 2. Install System Dependencies (Wajib ada FFmpeg & Git)
-# Kita juga membersihkan cache apt agar image lebih kecil
-RUN apt-get update && \
-    apt-get install -y ffmpeg git && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# 1. Install alat sistem (Hanya jalan sekali, selamanya di-cache)
+RUN apt-get update && apt-get install -y \
+    ffmpeg libsm6 libxext6 libgl1-mesa-glx \
+    && apt-get clean
 
-# 3. Set folder kerja di dalam container
 WORKDIR /app
 
-# 4. Copy file requirements dulu (agar caching layer docker efisien)
+# 2. COPY requirements DULU
+# Ini kunci rahasianya. Selama isi file ini tidak berubah, 
+# Docker TIDAK AKAN download ulang library meskipun kodemu berubah.
 COPY requirements.txt .
 
-# 5. Install Library Python
-# --no-cache-dir agar tidak menyimpan file mentahan (hemat space)
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# 3. Jalankan pip install
+RUN pip install --no-cache-dir -r requirements.txt
 
-# 6. Copy seluruh kode project ke dalam container
+# 4. Baru COPY seluruh kode
+# Kode ditaruh paling bawah karena paling sering diubah.
 COPY . .
 
-# 7. (Opsional) Buat folder static/results jika belum ada
-RUN mkdir -p static/results
-
-# 8. Perintah untuk menjalankan aplikasi saat container start
-# Host 0.0.0.0 WAJIB agar bisa diakses dari luar container
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
